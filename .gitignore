@@ -1,0 +1,4 @@
+*.dll
+*.sys
+*.exe
+config.json
