@@ -338,10 +338,18 @@ function Show-Slots($ids) {
     Write-Host ""
 }
 
+function Write-Recovery {
+    Write-Warn2 "Keyboard or mouse stopped working after installing Interception? The driver is the usual cause:"
+    Write-Info "  On-screen keyboard: Win+Ctrl+O.  Admin PowerShell: Win+X, then A."
+    Write-Info "  Run  install-interception.exe /uninstall  (from the folder you unzipped it to), then REBOOT."
+}
+
 function Invoke-Wizard($ids) {
     Write-Host ""
     Write-Host "  physkb setup" -ForegroundColor Cyan
     Write-Host "  ------------"
+    Write-Recovery
+    Write-Host ""
     Write-Info "physkb re-sends injected input through a real device slot. Pick the slots below."
     Write-Info "Duplicates are normal - one physical device can show up several times."
     Show-Slots $ids
@@ -416,6 +424,9 @@ if (-not $dir) {
     Write-Info "2. Unzip it, e.g. to C:\Interception"
     Write-Info "3. Run  install-interception.exe /install  from an admin prompt, then REBOOT"
     Write-Info "4. Run physkb again (or pass -DllDir <folder with the x64 interception.dll>)"
+    Write-Host ""
+    Write-Warn2 "Interception is a kernel driver that filters ALL keyboards and mice. Know how to remove it first:"
+    Write-Recovery
     return
 }
 
