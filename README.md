@@ -70,7 +70,21 @@ Yellow lines are injected (software) input, green lines are physical. Input hand
 - Cursor movement is **not** re-sent by default, so mouse moves still carry the injected flag. `-MouseMoves` exists but is experimental: absolute moves through Interception are poorly behaved on some mice, and relative moves are subject to pointer acceleration.
 - Unicode text packets (`VK_PACKET`) are passed through unchanged.
 - Apps that read the sending *device* through Raw Input will see the slot you chose.
-- Developed and checked on one setup (Windows 11, Dell keyboard, Razer mouse, Parsec): keyboard and clicks/wheel. Moves are untested. Reports for other setups welcome.
+
+## Tested
+
+Developed on one setup: Windows 11, Dell keyboard, Razer mouse, input arriving through Parsec. On that setup, keyboard re-send and mouse clicks/wheel were confirmed to arrive as physical input (using early versions of the code; the setup wizard was run on the current version). Not yet verified: `-MouseMoves`, mouse slot auto-failover and saved-config reuse across restarts on other hardware. Reports for other setups are welcome.
+
+## Troubleshooting
+
+- **"interception.dll not found" / driver errors:** install the Interception driver (`install-interception.exe /install` from an admin prompt) and **reboot**. Then point physkb at the x64 `interception.dll` with `-DllDir` if it isn't found automatically.
+- **My keyboard or mouse isn't listed:** Interception only lists devices Windows currently sees. Reconnect the device and run `.\physkb.ps1 -List`. If the only keyboard shown is `Virtual device`, plug in a real USB keyboard and run `-Setup`. The slot is just the device your re-sent keys pass through, so it doesn't have to be the keyboard you type on.
+- **Slot numbers changed:** slots can shift after plugging, unplugging or rebooting. If behaviour changes after a hardware change, run `.\physkb.ps1 -Setup` instead of trusting the saved settings (`-ForgetConfig` clears them).
+- **Keys or clicks do nothing:** run with `-Observe -Trace` to see what is detected without changing anything. Then run with `-Trace` and look at the `result=` value: `1` means the driver accepted the event. For the mouse, a matching `injected=False` line should follow each re-sent click.
+- **Mouse feels stuck:** press **Ctrl+Shift+F12** to switch physkb off, then run `-Observe -Trace`. Leave `-MouseMoves` off.
+- **Characters appear twice:** another hook-based tool started after physkb. Start physkb last.
+- **Script won't run (execution policy / downloaded ZIP):** use `powershell -ExecutionPolicy Bypass -File .\physkb.ps1`, or run `Unblock-File .\*.ps1` once.
+- **Start over:** `.\physkb.ps1 -ForgetConfig`, then run it again. Settings live in `%APPDATA%\physkb\config.json`.
 
 ## Responsible use
 
