@@ -15,6 +15,8 @@ Software input (`SendInput`, remote-desktop injection, most macro tools) is mark
 
 Real hardware input is never touched.
 
+> **Warning: read before installing the driver.** Interception is a kernel driver that sits in the path of *every* keyboard and mouse on the machine, even when physkb is not running. It is old and unsigned by modern standards, and on at least one setup (Windows 11, after the driver was installed and physkb was set up) the **physical keyboard stopped typing and the mouse started jumping**, while the on-screen keyboard still worked. Removing the driver is what fixes that, so know the way out **before** you install it: see [Recovery](#recovery-keyboard-or-mouse-stopped-working). Try it on a machine where you can still reach the on-screen keyboard (Win+Ctrl+O), not on your only computer.
+
 ## Requirements
 
 - Windows 10 / 11, 64-bit PowerShell 5.1+
@@ -85,6 +87,21 @@ Developed on one setup: Windows 11, Dell keyboard, Razer mouse, input arriving t
 - **Characters appear twice:** another hook-based tool started after physkb. Start physkb last.
 - **Script won't run (execution policy / downloaded ZIP):** use `powershell -ExecutionPolicy Bypass -File .\physkb.ps1`, or run `Unblock-File .\*.ps1` once.
 - **Start over:** `.\physkb.ps1 -ForgetConfig`, then run it again. Settings live in `%APPDATA%\physkb\config.json`.
+
+## Recovery: keyboard or mouse stopped working
+
+If your physical keyboard won't type or your mouse misbehaves after installing Interception, the driver is the usual cause (physkb itself only hooks input while it is running; check Task Manager for a leftover `powershell` window first). To remove it:
+
+1. Open the on-screen keyboard: **Win+Ctrl+O**. (Or use the mouse if the keyboard is the only thing broken.)
+2. Open an admin PowerShell: **Win+X**, then **A**, and accept the prompt.
+3. Run (adjust the path to where you unzipped Interception):
+   ```powershell
+   cd "C:\Interception\command line installer"
+   .\install-interception.exe /uninstall
+   ```
+4. **Restart.** The change only applies after a reboot.
+
+To confirm it is gone, `Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E96B-E325-11CE-BFC1-08002BE10318}' | Select UpperFilters` should list `kbdclass` only (no `keyboard` entry); the mouse class (`{4D36E96F-E325-11CE-BFC1-08002BE10318}`) should list `mouclass` only. You can use physkb again later by reinstalling the driver and rebooting.
 
 ## Responsible use
 
