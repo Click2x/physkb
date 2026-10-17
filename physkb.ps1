@@ -41,7 +41,8 @@ param(
     [switch]$Trace,
     [switch]$Observe,
     [switch]$ForgetConfig,
-    [switch]$CompileOnly
+    [switch]$CompileOnly,
+    [switch]$LoadOnly      # dot-source support (used by physkb-gui.ps1): define PhysKb and helpers, run nothing
 )
 
 $ErrorActionPreference = 'Stop'
@@ -240,8 +241,13 @@ public static class PhysKb {
         return CallNextHookEx(mhook, n, w, l);
     }
 
-    public static void Run(int kdev, int mdev, bool relative, bool moves) {
+    public static bool Enabled { get { return enabled; } }   // false while the Ctrl+Shift+F12 panic toggle is off
+    public static bool Running { get { return khook != IntPtr.Zero; } }
+
+    // Installs the hooks on the calling thread, which must pump messages (Application.Run / a WinForms form).
+    public static void Start(int kdev, int mdev, bool relative, bool moves) {
         kdevice = kdev; mdevice = mdev; mrelative = relative; mmoves = moves;
+        enabled = true; mouseOk = true; mfail = 0; pendMsg = 0; MouseConfirmed = 0;
         if (mdev != 0 && mslots.Length == 0) mslots = new int[] { mdev };
         IntPtr mod = GetModuleHandle(null);
         kproc = KCallback;
@@ -250,14 +256,20 @@ public static class PhysKb {
         if (mdev != 0) {
             mproc = MCallback;
             mhook = SetWindowsHookEx(14, mproc, mod, 0);
-            if (mhook == IntPtr.Zero) { UnhookWindowsHookEx(khook); throw new Exception("mouse SetWindowsHookEx failed"); }
+            if (mhook == IntPtr.Zero) { UnhookWindowsHookEx(khook); khook = IntPtr.Zero; throw new Exception("mouse SetWindowsHookEx failed"); }
         }
+    }
+
+    public static void Stop() {
+        if (khook != IntPtr.Zero) { UnhookWindowsHookEx(khook); khook = IntPtr.Zero; }
+        if (mhook != IntPtr.Zero) { UnhookWindowsHookEx(mhook); mhook = IntPtr.Zero; }
+    }
+
+    public static void Run(int kdev, int mdev, bool relative, bool moves) {
+        Start(kdev, mdev, relative, moves);
         Console.CancelKeyPress += delegate(object s, ConsoleCancelEventArgs e) { e.Cancel = true; Application.Exit(); };
         try { Application.Run(); }
-        finally {
-            UnhookWindowsHookEx(khook);
-            if (mhook != IntPtr.Zero) UnhookWindowsHookEx(mhook);
-        }
+        finally { Stop(); }
     }
 }
 '@
@@ -392,6 +404,8 @@ function Load-Config {
     }
     return $null
 }
+
+if ($LoadOnly) { return }
 
 # ----------------------------------------------------------------------------------------------
 # Main

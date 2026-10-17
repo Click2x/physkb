@@ -44,6 +44,21 @@ Verify it works with the included checker. Start it **first**, then physkb, then
 
 Yellow lines are injected (software) input, green lines are physical. Input handled by physkb should show green.
 
+## GUI
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\physkb-gui.ps1
+```
+
+A small Windows Forms window around the same code (`physkb-gui.ps1` loads the `PhysKb` class and helpers from `physkb.ps1`). It relaunches itself elevated, then offers:
+
+- **Keyboard / mouse dropdowns**, filled from the detected Interception slots (`None` leaves that device alone). Your saved `config.json` choice is preselected, and Start saves the selection back.
+- **Start / Stop** button and a status line (running, paused by the panic key, stopped, or why it couldn't start). Closing the window removes the hooks.
+- A note about the **Ctrl+Shift+F12** panic key, which works the same as in the command-line version.
+- **Driver recovery...** shows the uninstall steps from [Recovery](#recovery-keyboard-or-mouse-stopped-working) in a window. It only displays text and never runs anything.
+
+The GUI has no Trace/Observe or cursor-movement controls; use `physkb.ps1` for those (a saved `MouseMoves` setting is kept). Start it last, as with the CLI.
+
 ## Options
 
 | Option | What it does |
