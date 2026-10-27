@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/banner.svg" alt="physkb" width="100%"></p>
+
 # physkb
 
 Re-send injected keyboard and mouse input through the [Interception](https://github.com/oblitum/Interception) driver, so Windows apps see it as coming from a physical device instead of from software.
@@ -14,6 +16,8 @@ Software input (`SendInput`, remote-desktop injection, most macro tools) is mark
 4. sends the same event through a real device slot of the Interception driver, which enters Windows below that flag.
 
 Real hardware input is never touched.
+
+<p align="center"><img src="docs/how-it-works.svg" alt="Diagram: injected input is caught by physkb hooks, swallowed and re-sent through the Interception driver, while real hardware input goes straight to Windows apps" width="100%"></p>
 
 > **Warning: read before installing the driver.** Interception is a kernel driver that sits in the path of *every* keyboard and mouse on the machine, even when physkb is not running. It is old and unsigned by modern standards, and on at least one setup (Windows 11, after the driver was installed and physkb was set up) the **physical keyboard stopped typing and the mouse started jumping**, while the on-screen keyboard still worked. Removing the driver is what fixes that, so know the way out **before** you install it: see [Recovery](#recovery-keyboard-or-mouse-stopped-working). Try it on a machine where you can still reach the on-screen keyboard (Win+Ctrl+O), not on your only computer.
 
